@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OBSIDIAN — The Menu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    ::selection{background:rgba(201,169,110,.2);color:#f0ece4}
+    ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:#0a0a0b}::-webkit-scrollbar-thumb{background:#2a2a2e}
+    html{font-size:16px}
+    body{background:#0a0a0b;color:#f0ece4;overflow-x:hidden;-webkit-font-smoothing:antialiased;font-family:'DM Sans',system-ui,sans-serif}
+    @media(pointer:fine){
+      body{cursor:none}
+      #cur{position:fixed;top:0;left:0;z-index:9999;width:8px;height:8px;border-radius:50%;background:#c9a96e;pointer-events:none;transform:translate3d(-50%,-50%,0);mix-blend-mode:screen;will-change:transform}
+      #cur-ring{position:fixed;top:0;left:0;z-index:9998;width:32px;height:32px;border-radius:50%;border:1px solid rgba(201,169,110,.4);pointer-events:none;transform:translate3d(-50%,-50%,0);transition:width .28s,height .28s,border-color .28s;will-change:transform}
+      body.ch #cur{width:12px;height:12px}
+      body.ch #cur-ring{width:48px;height:48px;border-color:rgba(201,169,110,.75)}
+    }
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:50;height:64px;display:flex;align-items:center;padding:0 2.5rem;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(10,10,11,.82);border-bottom:1px solid rgba(42,42,46,.5)}
+    .nav-inner{width:100%;max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+    .nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.1rem;letter-spacing:.35em;color:#f0ece4;text-decoration:none}
+    .nav-links{display:flex;gap:2.5rem;align-items:center}
+    .nav-link{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:#9b9690;text-decoration:none;transition:color .25s;position:relative}
+    .nav-link::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:#c9a96e;transition:width .3s}
+    .nav-link:hover{color:#f0ece4}.nav-link:hover::after,.nav-link.cur::after{width:100%}
+    .nav-link.cur{color:#c9a96e}
+    .nav-res{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:#c9a96e;text-decoration:none;border:1px solid rgba(201,169,110,.35);padding:.5rem 1.4rem;border-radius:100px;transition:all .25s}
+    .nav-res:hover{background:rgba(201,169,110,.08);border-color:#c9a96e}
+    .mob-btn{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+    .mob-btn span{width:22px;height:1px;background:#f0ece4;display:block;transition:all .3s}
+    @media(max-width:768px){
+      .nav-links,.nav-res{display:none}.mob-btn{display:flex}
+      .mob-menu{display:none;position:fixed;inset:0;top:64px;background:#0a0a0b;z-index:49;flex-direction:column;padding:3rem 2rem;gap:2.5rem}
+      .mob-menu.open{display:flex}
+      .mob-menu a{font-family:'Cormorant Garamond',serif;font-size:2rem;font-style:italic;color:#f0ece4;text-decoration:none}
+    }
+    /* PAGE HEADER */
+    .page-header{padding:9rem 2.5rem 3.5rem;max-width:1280px;margin:0 auto}
+    .sec-tag{font-size:.65rem;letter-spacing:.35em;text-transform:uppercase;color:#c9a96e;margin-bottom:1.5rem;display:block}
+    .page-title{font-family:'Cormorant Garamond',serif;font-size:clamp(64px,10vw,136px);font-weight:300;line-height:.92;color:#f0ece4}
+    .page-title em{font-style:italic;color:#5c5a56}
+    .hdr-rule{height:1px;background:linear-gradient(90deg,transparent,#c9a96e 25%,rgba(201,169,110,.15) 65%,transparent);margin:3rem 0 1.5rem}
+    .page-intro{font-size:.85rem;color:#5c5a56;line-height:1.85;max-width:480px}
+    /* FILTER BAR */
+    .fbar{position:sticky;top:64px;z-index:40;background:rgba(10,10,11,.94);backdrop-filter:blur(20px);border-bottom:1px solid rgba(42,42,46,.4)}
+    .fbar-inner{max-width:1280px;margin:0 auto;padding:0 2.5rem;display:flex;align-items:center;overflow-x:auto;scrollbar-width:none}
+    .fbar-inner::-webkit-scrollbar{display:none}
+    .ftab{font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:#5c5a56;padding:1.1rem 1.5rem;border:none;background:none;cursor:pointer;transition:color .25s;white-space:nowrap;position:relative;flex-shrink:0}
+    .ftab::after{content:'';position:absolute;bottom:0;left:1.5rem;right:1.5rem;height:1px;background:#c9a96e;transform:scaleX(0);transition:transform .25s}
+    .ftab:hover{color:#9b9690}
+    .ftab.active{color:#c9a96e}.ftab.active::after{transform:scaleX(1)}
+    .fdiv{width:1px;height:16px;background:rgba(42,42,46,.5);margin:0 .3rem;flex-shrink:0}
+    .srch-wrap{margin-left:auto;padding:.7rem 0;flex-shrink:0}
+    .srch{background:rgba(23,23,26,.6);border:1px solid rgba(42,42,46,.6);color:#f0ece4;outline:none;border-radius:100px;padding:.45rem 1.1rem;font-family:'DM Sans',sans-serif;font-size:.75rem;width:160px;transition:border-color .25s,width .35s}
+    .srch::placeholder{color:#3a3a3e}.srch:focus{border-color:rgba(201,169,110,.4);width:210px}
+    /* MENU BODY */
+    .menu-body{max-width:1280px;margin:0 auto;padding:0 2.5rem 6rem}
+    .cat-block{padding:4rem 0 1rem;border-top:1px solid rgba(42,42,46,.35)}
+    .cat-block:first-child{border-top:none;padding-top:3rem}
+    .cat-hdr{display:flex;align-items:baseline;gap:1.5rem;margin-bottom:2.5rem}
+    .cat-name{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,4vw,50px);font-weight:300;color:#f0ece4}
+    .cat-cnt{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#3a3a3e;padding-top:.4rem}
+    /* LIST items (no image) */
+    .items-list{display:flex;flex-direction:column}
+    .mitem{display:grid;grid-template-columns:1fr auto;align-items:start;gap:2rem;padding:1.5rem 0;border-bottom:1px solid rgba(42,42,46,.22);transition:background .2s}
+    .mitem:last-child{border-bottom:none}
+    .mitem:hover{background:rgba(255,255,255,.012)}
+    .mitem-left{display:flex;flex-direction:column;gap:.35rem}
+    .mitem-name{font-family:'Cormorant Garamond',serif;font-size:1.28rem;font-weight:400;color:#f0ece4;line-height:1.2}
+    .mitem-desc{font-size:.78rem;color:#5c5a56;line-height:1.6;max-width:520px}
+    .mitem-price{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:#c9a96e;white-space:nowrap;padding-top:.1rem}
+    /* GRID items (with images) */
+    .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px}
+    .mcard{background:#111113;overflow:hidden;position:relative}
+    .mcard-img-wrap{overflow:hidden;aspect-ratio:4/3}
+    .mcard-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s cubic-bezier(.16,1,.3,1)}
+    .mcard:hover .mcard-img{transform:scale(1.04)}
+    .mcard-no-img{aspect-ratio:4/3;background:#111113;display:flex;align-items:center;justify-content:center}
+    .mcard-body{padding:1.4rem 1.6rem 1.6rem}
+    .mcard-tag{font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:#3a3a3e;margin-bottom:.5rem}
+    .mcard-name{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:300;color:#f0ece4;line-height:1.2;margin-bottom:.4rem}
+    .mcard-desc{font-size:.75rem;color:#5c5a56;line-height:1.55;margin-bottom:.9rem}
+    .mcard-price{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:#c9a96e}
+    /* SKELETON */
+    .skel{background:linear-gradient(90deg,#111113 25%,#17171a 50%,#111113 75%);background-size:300% 100%;animation:sk 1.5s infinite;border-radius:3px}
+    @keyframes sk{from{background-position:100%}to{background-position:-100%}}
+    /* EMPTY */
+    .empty{text-align:center;padding:6rem 2rem}
+    .empty-icon{font-family:'Cormorant Garamond',serif;font-size:4rem;color:rgba(201,169,110,.12);margin-bottom:1rem}
+    .empty-txt{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;font-style:italic;color:#5c5a56}
+    /* REVEAL */
+    .rv{opacity:0;transform:translateY(26px);transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1)}
+    .rv.in{opacity:1;transform:none}
+    .rv1{transition-delay:.08s}.rv2{transition-delay:.18s}.rv3{transition-delay:.28s}
+    /* FOOTER CTA */
+    .fcta{border-top:1px solid rgba(42,42,46,.4);padding:5rem 2.5rem;text-align:center}
+    .fcta-title{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,5vw,64px);font-weight:300;color:#f0ece4;line-height:1.1;margin-bottom:2.5rem}
+    .fcta-title em{font-style:italic;color:#5c5a56}
+    .cta-btn{display:inline-flex;align-items:center;gap:.7rem;background:#c9a96e;color:#0a0a0b;font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;padding:1rem 2.5rem;border-radius:100px;text-decoration:none;transition:background .25s,transform .25s}
+    .cta-btn:hover{background:#e8d5a8;transform:translateY(-2px)}
+    footer{border-top:1px solid rgba(42,42,46,.35);padding:2rem 2.5rem}
+    .ft-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+    .ft-logo{font-family:'Cormorant Garamond',serif;letter-spacing:.3em;color:#3a3a3e;font-size:.9rem}
+    .ft-copy{font-size:.65rem;color:#3a3a3e}
+    .ft-links{display:flex;gap:2rem}
+    .ft-links a{font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:#3a3a3e;text-decoration:none;transition:color .2s}
+    .ft-links a:hover{color:#9b9690}
+    .amb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0}
+  </style>
+</head>
+<body>
+  <div class="amb" style="width:500px;height:500px;background:rgba(201,169,110,.03);top:-80px;right:-80px;"></div>
+  <div class="amb" style="width:350px;height:350px;background:rgba(139,38,53,.04);bottom:30%;left:-60px;"></div>
+  <div id="cur"></div>
+  <div id="cur-ring"></div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="v4.html" class="nav-logo">OBSIDIAN</a>
+      <div class="nav-links">
+        <a href="menu.html" class="nav-link cur">Menu</a>
+        <a href="v4.html#story" class="nav-link">Story</a>
+        <a href="v4.html#experience" class="nav-link">Experience</a>
+      </div>
+      <a href="reservations.html" class="nav-res">Reserve</a>
+      <button class="mob-btn" onclick="toggleMob()" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <div class="mob-menu" id="mob-menu">
+    <a href="v4.html">Home</a>
+    <a href="menu.html" style="color:#c9a96e;">Menu</a>
+    <a href="reservations.html">Reserve a Table</a>
+  </div>
+
+  <!-- HEADER -->
+  <div class="page-header" style="position:relative;z-index:1">
+    <span class="sec-tag rv">Paris · Fine Dining · Seasonal</span>
+    <h1 class="page-title rv rv1">The<br /><em>Menu.</em></h1>
+    <div class="hdr-rule rv rv2"></div>
+    <p class="page-intro rv rv3">Every item is a meditation on restraint. Our menu evolves with each lunar cycle — what you see today may transform tomorrow.</p>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="fbar">
+    <div class="fbar-inner">
+      <button class="ftab active" data-filter="all">All</button>
+      <div class="fdiv"></div>
+      <button class="ftab" data-filter="starters">Starters</button>
+      <button class="ftab" data-filter="mains">Mains</button>
+      <button class="ftab" data-filter="desserts">Desserts</button>
+      <button class="ftab" data-filter="drinks">Drinks</button>
+      <div class="srch-wrap">
+        <input type="search" id="srch" class="srch" placeholder="Search…" autocomplete="off" />
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU BODY -->
+  <div class="menu-body" style="position:relative;z-index:1">
+    <div id="skel">
+      <div class="cat-block" style="border-top:none;padding-top:3rem">
+        <div class="cat-hdr"><div class="skel" style="width:160px;height:38px"></div></div>
+        <div class="items-list">
+          <div class="mitem" style="opacity:1"><div><div class="skel" style="width:220px;height:17px;margin-bottom:7px"></div><div class="skel" style="width:340px;height:11px"></div></div><div class="skel" style="width:44px;height:17px"></div></div>
+          <div class="mitem" style="opacity:1"><div><div class="skel" style="width:175px;height:17px;margin-bottom:7px"></div><div class="skel" style="width:290px;height:11px"></div></div><div class="skel" style="width:44px;height:17px"></div></div>
+          <div class="mitem" style="opacity:1"><div><div class="skel" style="width:240px;height:17px;margin-bottom:7px"></div><div class="skel" style="width:380px;height:11px"></div></div><div class="skel" style="width:44px;height:17px"></div></div>
+        </div>
+      </div>
+    </div>
+    <div id="content" style="display:none"></div>
+    <div id="empty" class="empty" style="display:none">
+      <div class="empty-icon">◇</div>
+      <p class="empty-txt">No items found for this selection.</p>
+    </div>
+  </div>
+
+  <!-- FOOTER CTA -->
+  <div class="fcta" style="position:relative;z-index:1">
+    <p class="fcta-title">Ready to dine?<br /><em>Reserve tonight.</em></p>
+    <a href="reservations.html" class="cta-btn"><span>✦</span> Make a Reservation</a>
+  </div>
+
+  <footer style="position:relative;z-index:1">
+    <div class="ft-inner">
+      <span class="ft-logo">OBSIDIAN</span>
+      <p class="ft-copy">© 2026 Obsidian Restaurant. All rights reserved.</p>
+      <div class="ft-links">
+        <a href="v4.html">Home</a>
+        <a href="reservations.html">Reservations</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // CURSOR
+    const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    if(cur&&ring){
+      document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.transform=`translate3d(${mx-4}px,${my-4}px,0)`},{passive:true});
+      (function ar(){rx+=(mx-rx)*.13;ry+=(my-ry)*.13;ring.style.transform=`translate3d(${rx-16}px,${ry-16}px,0)`;requestAnimationFrame(ar)})();
+      document.addEventListener('mouseover',e=>{if(e.target.closest('a,button'))document.body.classList.add('ch')});
+      document.addEventListener('mouseout',e=>{if(e.target.closest('a,button'))document.body.classList.remove('ch')});
+    }
+    // MOB NAV
+    let mobOpen=false;
+    function toggleMob(){mobOpen=!mobOpen;document.getElementById('mob-menu').classList.toggle('open',mobOpen)}
+    // REVEAL
+    const ro=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target)}}),{threshold:.08});
+    document.querySelectorAll('.rv').forEach(el=>ro.observe(el));
+    // ESC
+    function esc(s){if(typeof s!=='string')return'';return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;'}[c]))}
+
+    // DATA
+    let allItems=[],activeFilter='all',searchQ='';
+    const FALLBACK=[
+      {id:'f1',name:'Caviar & Sea Foam',category:'starters',price:42,description:'Ossetra caviar · Champagne beurre blanc · Micro herbs',image_url:'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=900&q=80&auto=format'},
+      {id:'f2',name:'Duck Foie Gras Terrine',category:'starters',price:36,description:'Sauternes jelly · Brioche mouillette · Pickled grapes',image_url:''},
+      {id:'f3',name:'Celeriac & Truffle Velouté',category:'starters',price:28,description:'Black truffle shavings · Hazelnut oil · Chervil',image_url:''},
+      {id:'f4',name:'Wagyu A5 Silence',category:'mains',price:110,description:'Japanese A5 Wagyu · Truffle jus · Compressed violet potato',image_url:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=900&q=80&auto=format'},
+      {id:'f5',name:"Turbot en Croûte d'Herbes",category:'mains',price:78,description:'Wild turbot · Herb crust · Beurre de Noilly · Sea vegetables',image_url:''},
+      {id:'f6',name:'Pigeon Rôti',category:'mains',price:72,description:'French squab pigeon · Black cherry jus · Pommes soufflées',image_url:''},
+      {id:'f7',name:'Lunar Sequence',category:'mains',price:285,description:'12 courses · Seasonal · Wine pairing available · Reserve 48h ahead',image_url:'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=900&q=80&auto=format'},
+      {id:'f8',name:'Valrhona Nocturne',category:'desserts',price:38,description:'Dark chocolate · Smoked caramel · Tonka bean snow',image_url:'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900&q=80&auto=format'},
+      {id:'f9',name:'Île Flottante Revisitée',category:'desserts',price:28,description:'Floating island · Saffron crème anglaise · Praline',image_url:''},
+      {id:'f10',name:'Seasonal Sorbet',category:'desserts',price:22,description:'Three sorbets · Single-origin seasonal fruits',image_url:''},
+      {id:'f11',name:'Sommelier Wine Pairing',category:'drinks',price:145,description:'Six glasses curated by Élise Moreau to complement your meal',image_url:''},
+      {id:'f12',name:'Krug Grande Cuvée',category:'drinks',price:48,description:'Per glass · Multi-vintage blend · Pinot Noir forward',image_url:''},
+      {id:'f13',name:'Non-Alcoholic Pairing',category:'drinks',price:65,description:'Six artisanal presses and infusions · Zero compromise on flavour',image_url:''},
+    ];
+    const CAT_ORDER=['starters','mains','desserts','drinks'];
+    const CAT_LBL={starters:'Starters',mains:'Mains',desserts:'Desserts',drinks:'Drinks & Wines'};
+
+    async function loadMenu(){
+      try{
+        const cr=await fetch('/api/config');if(!cr.ok)throw 0;
+        const cfg=await cr.json();if(!cfg.supabaseUrl||!cfg.supabaseAnonKey)throw 0;
+        const r=await fetch(`${cfg.supabaseUrl}/rest/v1/menu_items?available=eq.true&order=category,name`,{headers:{'apikey':cfg.supabaseAnonKey,'Authorization':`Bearer ${cfg.supabaseAnonKey}`}});
+        if(!r.ok)throw 0;allItems=await r.json();
+      }catch{allItems=FALLBACK}
+      document.getElementById('skel').style.display='none';
+      document.getElementById('content').style.display='block';
+      renderMenu();
+    }
+
+    function renderMenu(){
+      const cont=document.getElementById('content'),emp=document.getElementById('empty');
+      const q=searchQ.toLowerCase();
+      const filtered=allItems.filter(it=>(activeFilter==='all'||it.category===activeFilter)&&(!q||it.name.toLowerCase().includes(q)||(it.description||'').toLowerCase().includes(q)));
+      if(!filtered.length){cont.style.display='none';emp.style.display='block';return}
+      emp.style.display='none';cont.style.display='block';
+      const groups={};filtered.forEach(it=>{const c=it.category||'other';if(!groups[c])groups[c]=[];groups[c].push(it)});
+      const cats=CAT_ORDER.filter(c=>groups[c]);
+      cont.innerHTML=cats.map((cat,ci)=>{
+        const items=groups[cat];
+        const hasImg=items.some(it=>it.image_url&&it.image_url.trim());
+        const itemsHTML=hasImg
+          ?`<div class="items-grid">${items.map((it,i)=>`<div class="mcard rv" style="transition-delay:${i*.06}s">
+              ${it.image_url?`<div class="mcard-img-wrap"><img class="mcard-img" src="${esc(it.image_url)}" alt="${esc(it.name)}" loading="lazy"/></div>`:`<div class="mcard-no-img"><span style="font-family:'Cormorant Garamond',serif;font-size:3rem;color:rgba(201,169,110,.07)">◇</span></div>`}
+              <div class="mcard-body"><p class="mcard-tag">${esc(CAT_LBL[cat]||cat)}</p><p class="mcard-name">${esc(it.name)}</p>${it.description?`<p class="mcard-desc">${esc(it.description)}</p>`:''}<p class="mcard-price">€${parseFloat(it.price||0).toFixed(0)}</p></div>
+            </div>`).join('')}</div>`
+          :`<div class="items-list">${items.map((it,i)=>`<div class="mitem rv" style="transition-delay:${i*.045}s">
+              <div class="mitem-left"><span class="mitem-name">${esc(it.name)}</span>${it.description?`<span class="mitem-desc">${esc(it.description)}</span>`:''}</div>
+              <span class="mitem-price">€${parseFloat(it.price||0).toFixed(0)}</span>
+            </div>`).join('')}</div>`;
+        return`<div class="cat-block${ci===0?' first-cat':''}"><div class="cat-hdr rv"><h2 class="cat-name">${esc(CAT_LBL[cat]||cat)}</h2><span class="cat-cnt">${items.length} item${items.length!==1?'s':''}</span></div>${itemsHTML}</div>`;
+      }).join('');
+      // Re-observe new reveals
+      cont.querySelectorAll('.rv:not(.in)').forEach(el=>ro.observe(el));
+    }
+    // FILTER
+    document.querySelectorAll('.ftab').forEach(tab=>{
+      tab.addEventListener('click',()=>{
+        document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');activeFilter=tab.dataset.filter;renderMenu();
+      });
+    });
+    // SEARCH
+    let st;
+    document.getElementById('srch').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{searchQ=e.target.value.trim();renderMenu()},280)});
+    loadMenu();
+  </script>
+</body>
+</html>

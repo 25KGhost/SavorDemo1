@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OBSIDIAN — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0a0a0b}::-webkit-scrollbar-thumb{background:#2a2a2e;border-radius:2px}
+    :root{
+      --bg:#0a0a0b;--surf:#17171a;--surf2:#1e1e22;--bdr:rgba(42,42,46,.8);
+      --txt:#f0ece4;--tm:#5c5a56;--ts:#9b9690;
+      --gold:#c9a96e;--gold-d:rgba(201,169,110,.12);
+      --hf:'Cormorant Garamond',Georgia,serif;--bf:'DM Sans',system-ui,sans-serif;
+    }
+    body{font-family:var(--bf);background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    /* LOGIN */
+    #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse at 60% 20%,rgba(201,169,110,.04) 0%,transparent 60%)}
+    .lbox{background:rgba(23,23,26,.9);backdrop-filter:blur(16px);border:1px solid var(--bdr);border-radius:16px;padding:3rem 2.5rem;width:100%;max-width:420px}
+    .llogo{font-family:var(--hf);font-size:2rem;letter-spacing:.35em;color:var(--gold);text-align:center;display:block;margin-bottom:.3rem}
+    .lsub{font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--tm);text-align:center;margin-bottom:2.5rem}
+    label{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--tm);display:block;margin-bottom:.4rem}
+    .inp{background:rgba(30,30,34,.8);border:1px solid var(--bdr);color:var(--txt);outline:none;transition:border-color .3s;width:100%;border-radius:6px;padding:13px 16px;font-family:var(--bf);font-size:.9rem}
+    .inp::placeholder{color:var(--tm)}.inp:focus{border-color:var(--gold);background:rgba(201,169,110,.03)}
+    select.inp option{background:#17171a} textarea.inp{resize:vertical}
+    .fg{margin-bottom:1.2rem}.mt2{margin-top:1.2rem}.mt3{margin-top:1.8rem}
+    .btn{background:var(--gold);color:#0a0a0b;border:none;border-radius:100px;padding:.85rem 2rem;font-family:var(--bf);font-size:.72rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:all .25s}
+    .btn:hover{background:#e8d5a8;transform:translateY(-1px)}
+    .btn-sec{background:transparent;color:var(--ts);border:1px solid var(--bdr);border-radius:100px;padding:.85rem 2rem;font-family:var(--bf);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:all .25s}
+    .btn-sec:hover{border-color:rgba(201,169,110,.4);color:var(--gold)}
+    .btn-sm{padding:.5rem 1rem;font-size:.68rem}
+    .btn-danger{background:rgba(229,57,53,.15);color:#ef9a9a;border:1px solid rgba(239,154,154,.3);border-radius:100px;padding:.5rem 1rem;font-family:var(--bf);font-size:.68rem;cursor:pointer;transition:all .25s}
+    .btn-danger:hover{background:rgba(229,57,53,.25)}
+    .w100{width:100%}
+    .ferr{color:#ef9a9a;font-size:.78rem;min-height:1.2em;margin-top:.4rem}
+    .tabs-row{display:flex;gap:.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--bdr);padding-bottom:0}
+    .tab-btn{background:none;border:none;font-family:var(--bf);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);padding:.8rem 1.2rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+    .tab-btn:hover{color:var(--ts)}.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+    /* DASHBOARD */
+    #dashboard{display:none;min-height:100vh}
+    .sidebar{width:240px;min-height:100vh;background:rgba(23,23,26,.85);backdrop-filter:blur(16px);border-right:1px solid var(--bdr);padding:1.8rem 1.2rem;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:50}
+    .sb-logo{font-family:var(--hf);font-size:1.4rem;letter-spacing:.3em;color:var(--gold);padding-bottom:1.5rem;border-bottom:1px solid var(--bdr);margin-bottom:1.5rem}
+    .sb-logo small{display:block;font-size:.6rem;letter-spacing:.2em;color:var(--tm);text-transform:uppercase;font-family:var(--bf);margin-top:.2rem}
+    .sb-nav{display:flex;flex-direction:column;gap:.3rem;flex:1}
+    .sb-link{background:transparent;border:none;color:var(--ts);font-family:var(--bf);font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;padding:.7rem 1rem;border-radius:8px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:.7rem;transition:all .2s}
+    .sb-link:hover{background:rgba(255,255,255,.04);color:var(--txt)}.sb-link.active{background:var(--gold-d);color:var(--gold)}
+    .sb-div{border:none;border-top:1px solid var(--bdr);margin:.8rem 0}
+    .sb-logout{background:transparent;border:1px solid var(--bdr);color:var(--tm);font-family:var(--bf);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.6rem 1rem;border-radius:100px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.5rem;margin-top:.8rem}
+    .sb-logout:hover{border-color:rgba(239,154,154,.4);color:#ef9a9a}
+    .sess{font-size:.68rem;color:var(--tm);display:flex;align-items:center;gap:.5rem;margin-top:auto;padding-top:1rem}
+    .sess-dot{width:6px;height:6px;border-radius:50%;background:#81c784;animation:pulse 2s infinite;flex-shrink:0}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .admin-main{margin-left:240px;min-height:100vh}
+    .admin-hdr{padding:2rem 2.5rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .sec-title{font-family:var(--hf);font-size:2rem;font-weight:300;color:var(--txt)}
+    .sec-sub{font-size:.78rem;color:var(--tm);margin-top:.3rem}
+    .admin-sec{display:none;padding:2rem 2.5rem}
+    .admin-sec.active{display:block}
+    /* TABLE */
+    .tbl{width:100%;border-collapse:collapse;font-size:.82rem}
+    .tbl th{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--tm);padding:.7rem 1rem;text-align:left;border-bottom:1px solid var(--bdr)}
+    .tbl td{padding:.8rem 1rem;border-bottom:1px solid rgba(42,42,46,.35);color:var(--ts);vertical-align:middle}
+    .tbl tr:hover td{background:rgba(255,255,255,.02)}.tbl tr:last-child td{border-bottom:none}
+    /* BADGES */
+    .badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.22rem .65rem;border-radius:100px;font-family:var(--bf)}
+    .b-confirmed{background:rgba(201,169,110,.12);color:var(--gold);border:1px solid rgba(201,169,110,.25)}
+    .b-pending{background:rgba(100,181,246,.1);color:#64b5f6;border:1px solid rgba(100,181,246,.25)}
+    .b-arrived{background:rgba(129,199,132,.12);color:#81c784;border:1px solid rgba(129,199,132,.25)}
+    .b-cancelled{background:rgba(229,57,53,.1);color:#ef9a9a;border:1px solid rgba(239,154,154,.25)}
+    .b-no_show{background:rgba(255,183,77,.1);color:#ffb74d;border:1px solid rgba(255,183,77,.25)}
+    .b-current{background:rgba(129,199,132,.18);color:#81c784;border:1px solid rgba(129,199,132,.4)}
+    .b-upcoming{background:rgba(100,181,246,.15);color:#64b5f6;border:1px solid rgba(100,181,246,.4)}
+    /* FILTERS */
+    .filters{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+    .fbtn{background:transparent;border:1px solid var(--bdr);color:var(--tm);font-family:var(--bf);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;padding:.45rem .9rem;border-radius:100px;cursor:pointer;transition:all .2s}
+    .fbtn:hover{border-color:rgba(201,169,110,.3);color:var(--gold)}.fbtn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-d)}
+    /* TOOLBAR */
+    .toolbar{display:flex;gap:.8rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
+    /* FORM PANEL */
+    .fpanel{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:1.8rem;margin-bottom:1.5rem}
+    .fpanel h3{font-family:var(--hf);font-size:1.4rem;font-weight:300;margin-bottom:1.5rem;color:var(--txt)}
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    @media(max-width:640px){.g2{grid-template-columns:1fr}}
+    /* ACTION BTNS */
+    .abt{background:transparent;border:1px solid var(--bdr);color:var(--ts);border-radius:6px;padding:.35rem .7rem;font-family:var(--bf);font-size:.7rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .abt:hover{background:rgba(255,255,255,.04);color:var(--txt)}.abt.danger:hover{border-color:rgba(239,154,154,.4);color:#ef9a9a}.abt.ok:hover{border-color:rgba(129,199,132,.4);color:#81c784}
+    .loading{color:var(--tm);font-size:.85rem;padding:2rem;text-align:center}
+    /* STATS */
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;margin-bottom:2rem}
+    .stat{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:1.5rem}
+    .stat-v{font-family:var(--hf);font-size:2.5rem;font-weight:300;color:var(--gold);line-height:1}
+    .stat-l{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);margin-top:.4rem}
+    /* MODAL */
+    .modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:1.5rem;background:rgba(10,10,11,.85);backdrop-filter:blur(8px)}
+    .modal.open{display:flex}
+    /* BACKUP */
+    .bkp-sec{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:2rem;margin-bottom:1.5rem}
+    .bkp-sec h3{font-family:var(--hf);font-size:1.4rem;font-weight:300;color:var(--txt);margin-bottom:.5rem}
+    .bkp-row{display:flex;align-items:center;justify-content:space-between;padding:1rem 0;border-bottom:1px solid rgba(42,42,46,.35);gap:1rem;flex-wrap:wrap}
+    .bkp-row:last-child{border-bottom:none}
+    /* GALLERY ADMIN */
+    .gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-top:1rem}
+    .gal-item{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:16/9;background:var(--surf2)}
+    .gal-item img{width:100%;height:100%;object-fit:cover;display:block}
+    .gal-overlay{position:absolute;inset:0;background:rgba(10,10,11,.75);opacity:0;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:.5rem}
+    .gal-item:hover .gal-overlay{opacity:1}
+    /* HERO IMAGES MANAGER */
+    .hero-img-list{display:flex;flex-direction:column;gap:.8rem;margin-top:1rem}
+    .hero-img-row{display:flex;align-items:center;gap:1rem;padding:1rem;background:var(--surf2);border-radius:8px;border:1px solid var(--bdr)}
+    .hero-img-preview{width:80px;height:48px;object-fit:cover;border-radius:4px;flex-shrink:0;background:var(--surf)}
+    .hero-img-url{flex:1;font-size:.78rem;color:var(--ts);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    code{background:rgba(255,255,255,.06);padding:.1em .4em;border-radius:4px;font-size:.82em;font-family:monospace}
+  </style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="login-screen">
+    <div class="lbox">
+      <span class="llogo">OBSIDIAN</span>
+      <p class="lsub">Admin Portal</p>
+
+      <!-- Login / Register tabs -->
+      <div class="tabs-row">
+        <button class="tab-btn active" onclick="showTab('login')">Sign In</button>
+        <button class="tab-btn" onclick="showTab('register')">Create Admin</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="login-tab">
+        <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off">
+        <div class="fg"><label>Email</label><input type="email" id="l-email" class="inp" required placeholder="admin@obsidian.com" autocomplete="email"></div>
+        <div class="fg mt2"><label>Password</label><input type="password" id="l-pass" class="inp" required placeholder="••••••••" autocomplete="current-password"></div>
+        <p class="ferr" id="l-err"></p>
+        <button class="btn w100 mt3" id="l-btn" onclick="doLogin()">Sign In</button>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="register-tab" style="display:none">
+        <p style="font-size:.78rem;color:var(--tm);margin-bottom:1.2rem;line-height:1.6">Only pre-approved Gmail accounts may register. Contact your developer to add your email to the whitelist.</p>
+        <div class="fg"><label>Email</label><input type="email" id="r-email" class="inp" placeholder="yourname@gmail.com" autocomplete="email"></div>
+        <div class="fg mt2"><label>Password</label><input type="password" id="r-pass" class="inp" placeholder="Min 8 characters" autocomplete="new-password"></div>
+        <div class="fg mt2"><label>Confirm Password</label><input type="password" id="r-pass2" class="inp" placeholder="Repeat password" autocomplete="new-password"></div>
+        <p class="ferr" id="r-err"></p>
+        <button class="btn w100 mt3" id="r-btn" onclick="doRegister()">Create Account</button>
+        <p id="r-ok" style="display:none;color:#81c784;font-size:.78rem;margin-top:.8rem;text-align:center">Account created! You can now sign in.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard">
+    <aside class="sidebar">
+      <div class="sb-logo">OBSIDIAN<small>Admin</small></div>
+      <nav class="sb-nav">
+        <button class="sb-link active" data-sec="reservations">◈ Reservations</button>
+        <button class="sb-link" data-sec="analytics">◉ Analytics</button>
+        <hr class="sb-div">
+        <button class="sb-link" data-sec="menu">◇ Menu Manager</button>
+        <button class="sb-link" data-sec="hero">◻ Hero Images</button>
+        <hr class="sb-div">
+        <button class="sb-link" data-sec="backup">↓ Backup</button>
+      </nav>
+      <div class="sess"><span class="sess-dot"></span><span id="sess-lbl">Session active</span></div>
+      <hr class="sb-div">
+      <button class="sb-logout" id="logout-btn">↩ Sign Out</button>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-hdr">
+        <div><h2 class="sec-title" id="sec-title">Reservations</h2><p class="sec-sub" id="sec-sub">Manage table bookings</p></div>
+        <div id="hdr-actions"></div>
+      </header>
+
+      <!-- RESERVATIONS -->
+      <section id="sec-reservations" class="admin-sec active">
+        <div class="filters">
+          <button class="fbtn active" data-filter="all">All</button>
+          <button class="fbtn" data-filter="current">🟢 Current</button>
+          <button class="fbtn" data-filter="upcoming">🔵 Upcoming</button>
+          <button class="fbtn" data-filter="confirmed">Confirmed</button>
+          <button class="fbtn" data-filter="arrived">Arrived</button>
+          <button class="fbtn" data-filter="pending">Pending</button>
+          <button class="fbtn" data-filter="cancelled">Cancelled</button>
+          <button class="fbtn" data-filter="no_show">No-show</button>
+        </div>
+        <div style="overflow-x:auto" id="res-wrap"><p class="loading">Loading…</p></div>
+      </section>
+
+      <!-- ANALYTICS -->
+      <section id="sec-analytics" class="admin-sec">
+        <div id="analytics-wrap"><p class="loading">Loading…</p></div>
+      </section>
+
+      <!-- MENU MANAGER -->
+      <section id="sec-menu" class="admin-sec">
+        <div class="toolbar">
+          <button class="btn btn-sm" id="add-item-btn">+ Add Item</button>
+        </div>
+        <div id="menu-form-wrap" class="fpanel" style="display:none">
+          <h3 id="mf-title">Add Menu Item</h3>
+          <form id="menu-form">
+            <div class="g2">
+              <div class="fg"><label>Name</label><input type="text" id="mi-name" class="inp" required maxlength="100"></div>
+              <div class="fg"><label>Category</label>
+                <select id="mi-cat" class="inp" required>
+                  <option value="starters">Starters</option><option value="mains">Mains</option>
+                  <option value="desserts">Desserts</option><option value="drinks">Drinks</option>
+                </select>
+              </div>
+              <div class="fg"><label>Price (€)</label><input type="number" id="mi-price" class="inp" required min="0" step="0.01"></div>
+              <div class="fg"><label>Available</label>
+                <select id="mi-avail" class="inp"><option value="true">Yes</option><option value="false">Hidden</option></select>
+              </div>
+              <div class="fg" style="grid-column:1/-1"><label>Image URL <span style="font-size:.65rem;text-transform:none;letter-spacing:0">(CDN link, optional)</span></label><input type="url" id="mi-img" class="inp" placeholder="https://…" maxlength="500"></div>
+            </div>
+            <div class="fg mt2"><label>Description</label><textarea id="mi-desc" class="inp" rows="2" maxlength="500"></textarea></div>
+            <input type="hidden" id="mi-id">
+            <div class="g2 mt3">
+              <button type="button" class="btn-sec" id="cancel-mf">Cancel</button>
+              <button type="submit" class="btn">Save Item</button>
+            </div>
+          </form>
+        </div>
+        <div style="overflow-x:auto" id="menu-tbl-wrap"><p class="loading">Loading menu items…</p></div>
+      </section>
+
+      <!-- HERO IMAGES -->
+      <section id="sec-hero" class="admin-sec">
+        <div class="fpanel">
+          <h3>Homepage Hero Images</h3>
+          <p style="font-size:.82rem;color:var(--tm);margin-bottom:1.5rem;line-height:1.6">Manage the dish images shown in the homepage menu preview section. Paste CDN or Unsplash URLs below. Changes save to Supabase and show on the live site.</p>
+          <div id="hero-img-list" class="hero-img-list"></div>
+          <div class="mt3" style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:1;min-width:200px">
+              <label>New Image URL</label>
+              <input type="url" id="hero-new-url" class="inp" placeholder="https://images.unsplash.com/photo-…" style="margin-top:.4rem">
+            </div>
+            <div style="min-width:160px">
+              <label>Caption / Alt Text</label>
+              <input type="text" id="hero-new-cap" class="inp" placeholder="Wagyu A5 Silence" maxlength="100" style="margin-top:.4rem">
+            </div>
+            <button class="btn btn-sm" style="flex-shrink:0" onclick="addHeroImage()">Add Image</button>
+          </div>
+          <p id="hero-msg" style="font-size:.78rem;margin-top:.8rem;min-height:1em"></p>
+        </div>
+      </section>
+
+      <!-- BACKUP -->
+      <section id="sec-backup" class="admin-sec">
+        <div class="bkp-sec">
+          <h3>Data Export & Backup</h3>
+          <p style="font-size:.82rem;color:var(--tm);margin-bottom:1.5rem;line-height:1.6">Export compact files for offline backup. Recommended weekly. Save to Google Drive in a folder named <code>obsidian-backups/</code>.</p>
+          <div class="bkp-row"><div><p style="font-size:.85rem;color:var(--txt)">Reservations CSV</p><p style="font-size:.75rem;color:var(--tm);margin-top:.2rem">All reservations with status</p></div><button class="btn btn-sm" id="exp-csv">Download CSV</button></div>
+          <div class="bkp-row"><div><p style="font-size:.85rem;color:var(--txt)">Reservations JSON (compact)</p><p style="font-size:.75rem;color:var(--tm);margin-top:.2rem">Minimal fields, smallest size</p></div><button class="btn btn-sm" id="exp-json">Download JSON</button></div>
+          <div class="bkp-row"><div><p style="font-size:.85rem;color:var(--txt)">Menu Items JSON</p><p style="font-size:.75rem;color:var(--tm);margin-top:.2rem">All menu items and prices</p></div><button class="btn btn-sm" id="exp-menu">Download JSON</button></div>
+          <div class="bkp-row"><div><p style="font-size:.85rem;color:var(--txt)">Full Backup</p><p style="font-size:.75rem;color:var(--tm);margin-top:.2rem">All data in one file</p></div><button class="btn btn-sm" id="exp-full">Download Full</button></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- CANCEL MODAL -->
+  <div id="cancel-modal" class="modal">
+    <div class="fpanel" style="max-width:440px;width:100%">
+      <h3>Cancel Reservation</h3>
+      <div class="fg"><label>Reason (sent to guest by email)</label><textarea id="cancel-reason" class="inp" rows="3" maxlength="500" placeholder="Please provide a reason…"></textarea></div>
+      <p class="ferr" id="cancel-err"></p>
+      <div class="g2 mt3">
+        <button class="btn-sec" id="cancel-dismiss">Back</button>
+        <button class="btn-danger" id="cancel-confirm" style="border-radius:100px;padding:.85rem 2rem">Confirm Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESCHEDULE MODAL -->
+  <div id="time-modal" class="modal">
+    <div class="fpanel" style="max-width:440px;width:100%">
+      <h3>Reschedule Reservation</h3>
+      <div class="g2">
+        <div class="fg"><label>New Date</label><input type="date" id="new-date" class="inp"></div>
+        <div class="fg"><label>New Time</label>
+          <select id="new-time" class="inp">
+            <option value="19:30">7:30 PM</option><option value="20:00">8:00 PM</option>
+            <option value="20:30">8:30 PM</option><option value="21:00">9:00 PM</option>
+            <option value="21:30">9:30 PM</option><option value="22:00">10:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg mt2"><label>Note to guest (optional)</label><textarea id="time-reason" class="inp" rows="2" maxlength="300"></textarea></div>
+      <p class="ferr" id="time-err"></p>
+      <div class="g2 mt3">
+        <button class="btn-sec" id="time-dismiss">Cancel</button>
+        <button class="btn" id="time-confirm">Confirm Change</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="obsidian-admin.js"></script>
+</body>
+</html>

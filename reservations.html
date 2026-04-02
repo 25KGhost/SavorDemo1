@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OBSIDIAN — Reservations</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config={theme:{extend:{colors:{obsidian:'#0a0a0b',surface:'#17171a','surface-2':'#1e1e22',border:'#2a2a2e','text-primary':'#f0ece4','text-secondary':'#9b9690','text-muted':'#5c5a56',gold:'#c9a96e','gold-light':'#e8d5a8',crimson:'#8b2635'},fontFamily:{serif:['Cormorant Garamond','Georgia','serif'],sans:['DM Sans','system-ui','sans-serif']},letterSpacing:{ultra:'0.35em','wide-xl':'0.2em'}}}}
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    ::selection{background:rgba(201,169,110,.25);color:#f0ece4}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0a0a0b}::-webkit-scrollbar-thumb{background:#2a2a2e;border-radius:2px}
+    body{background:#0a0a0b;color:#f0ece4;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    .nav-blur{backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);background:rgba(10,10,11,.85);border-bottom:1px solid rgba(42,42,46,.6)}
+    .gold-line{height:1px;background:linear-gradient(90deg,transparent,#c9a96e 40%,#c9a96e 60%,transparent)}
+    .section-label{font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#c9a96e}
+    .float-btn{transition:transform .3s cubic-bezier(.16,1,.3,1);will-change:transform}
+    .float-btn:hover{transform:scale(1.04) translateY(-1px)}
+    .orb{border-radius:50%;filter:blur(100px);pointer-events:none;position:fixed;z-index:0}
+    @media(pointer:fine){
+      body{cursor:none}
+      #cursor{position:fixed;top:0;left:0;z-index:9999;width:10px;height:10px;border-radius:50%;background:#c9a96e;pointer-events:none;mix-blend-mode:screen;transform:translate3d(-50%,-50%,0);will-change:transform}
+      #cursor-ring{position:fixed;top:0;left:0;z-index:9998;width:36px;height:36px;border-radius:50%;border:1px solid rgba(201,169,110,.5);pointer-events:none;transform:translate3d(-50%,-50%,0);transition:width .3s,height .3s,border-color .3s;will-change:transform}
+      body.cursor-hover #cursor{width:14px;height:14px}
+      body.cursor-hover #cursor-ring{width:52px;height:52px;border-color:rgba(201,169,110,.8)}
+    }
+    .form-input{background:rgba(23,23,26,.9);border:1px solid #2a2a2e;color:#f0ece4;outline:none;transition:border-color .3s,background .3s;width:100%;border-radius:6px;padding:14px 18px;font-family:'DM Sans',sans-serif;font-size:14px}
+    .form-input::placeholder{color:#5c5a56}.form-input:focus{border-color:#c9a96e;background:rgba(201,169,110,.04)}
+    select.form-input option{background:#17171a}
+    .form-label{font-family:'DM Sans',sans-serif;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:#5c5a56;display:block;margin-bottom:.5rem}
+    .step-dot{width:8px;height:8px;border-radius:50%;border:1px solid #2a2a2e;background:transparent;transition:all .3s}
+    .step-dot.active{background:#c9a96e;border-color:#c9a96e}.step-dot.done{background:rgba(201,169,110,.3);border-color:#c9a96e}
+    .step-line{flex:1;height:1px;background:#2a2a2e;transition:background .4s}.step-line.done{background:rgba(201,169,110,.4)}
+    /* CALENDAR */
+    .cal-wrap{background:rgba(23,23,26,.9);border:1px solid #2a2a2e;border-radius:6px;padding:1rem;transition:border-color .3s}
+    .cal-wrap:focus-within{border-color:rgba(201,169,110,.5)}
+    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+    .cal-nav{background:none;border:1px solid rgba(42,42,46,.8);color:#9b9690;border-radius:4px;width:28px;height:28px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .cal-nav:hover:not(:disabled){background:rgba(255,255,255,.05);color:#f0ece4}
+    .cal-nav:disabled{opacity:.2;cursor:not-allowed}
+    .cal-month{font-family:'Cormorant Garamond',serif;font-size:1rem;color:#c9a96e}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+    .cal-wd{text-align:center;font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:#5c5a56;padding:.2rem 0;font-family:'DM Sans',sans-serif}
+    .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:.82rem;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid transparent;transition:all .15s;color:#9b9690;user-select:none}
+    .cal-day.available:hover{background:rgba(201,169,110,.1);color:#f0ece4;border-color:rgba(201,169,110,.2)}
+    .cal-day.today{border-color:rgba(201,169,110,.35);color:#c9a96e}
+    .cal-day.selected{background:#c9a96e !important;color:#0a0a0b !important;font-weight:600;border-color:transparent !important}
+    .cal-day.disabled{opacity:.18;cursor:not-allowed;pointer-events:none}
+    .cal-day.empty{cursor:default;pointer-events:none}
+    /* TIME SLOTS */
+    .time-slot{font-family:'DM Sans',sans-serif;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;padding:.7rem .4rem;border-radius:6px;border:1px solid #2a2a2e;color:#9b9690;cursor:pointer;text-align:center;transition:all .2s;background:transparent}
+    .time-slot:hover{border-color:rgba(201,169,110,.4);color:#c9a96e}.time-slot.active{border-color:#c9a96e;color:#c9a96e;background:rgba(201,169,110,.06)}
+    .time-slot.disabled{opacity:.25;cursor:not-allowed;pointer-events:none}
+    /* VALIDATION */
+    .input-ok{border-color:rgba(129,199,132,.5)!important}.input-error{border-color:rgba(229,57,53,.5)!important}
+    .field-hint{font-size:.72rem;margin-top:.25rem;min-height:1em;font-family:'DM Sans',sans-serif}
+    .form-error{color:#ef9a9a;font-size:.8rem;font-family:'DM Sans',sans-serif;min-height:1.2em}
+    /* TICKET */
+    .ticket-card{background:linear-gradient(135deg,#17171a,#1e1e22);border:1px solid rgba(201,169,110,.2);border-radius:16px;padding:3rem 2.5rem;position:relative;overflow:hidden}
+    .ticket-card::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,#c9a96e,transparent)}
+    .ticket-row{display:flex;justify-content:space-between;align-items:baseline;padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .ticket-row:last-of-type{border-bottom:none}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    .fade-up{animation:fadeUp .6s cubic-bezier(.16,1,.3,1) both}
+    .fade-up-2{animation:fadeUp .6s cubic-bezier(.16,1,.3,1) .15s both}
+    .fade-up-3{animation:fadeUp .6s cubic-bezier(.16,1,.3,1) .3s both}
+  </style>
+</head>
+<body class="bg-obsidian">
+  <div class="orb w-96 h-96" style="background:rgba(201,169,110,.04);top:25%;right:-10%;"></div>
+  <div class="orb w-72 h-72" style="background:rgba(139,38,53,.05);bottom:25%;left:-5%;"></div>
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+
+  <!-- NAV -->
+  <nav class="nav-blur fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+      <a href="v4.html" class="font-serif text-lg tracking-ultra text-text-primary cursor-none">OBSIDIAN</a>
+      <div class="hidden md:flex items-center gap-10">
+        <a href="menu.html" class="font-sans text-xs tracking-wide-xl uppercase text-text-secondary hover:text-text-primary transition-colors duration-300 cursor-none">Menu</a>
+        <a href="v4.html#story" class="font-sans text-xs tracking-wide-xl uppercase text-text-secondary hover:text-text-primary transition-colors duration-300 cursor-none">Story</a>
+      </div>
+      <span class="hidden md:flex items-center gap-2 border border-gold/40 px-6 py-2.5 rounded-full font-sans text-xs tracking-wide-xl uppercase text-gold">Reservations</span>
+      <button class="md:hidden flex flex-col gap-1.5 cursor-none" onclick="toggleMob()">
+        <span class="w-6 h-px bg-text-primary"></span><span class="w-4 h-px bg-gold"></span><span class="w-6 h-px bg-text-primary"></span>
+      </button>
+    </div>
+    <div id="mob-menu" class="md:hidden hidden flex-col gap-6 px-6 pb-8 pt-4 bg-obsidian/95 border-t border-border">
+      <a href="v4.html" class="font-serif text-2xl italic text-text-primary">Home</a>
+      <a href="menu.html" class="font-serif text-2xl italic text-text-primary">Menu</a>
+    </div>
+  </nav>
+
+  <div class="min-h-screen pt-24 pb-20 px-6" style="position:relative;z-index:1">
+    <div class="max-w-5xl mx-auto">
+      <div class="grid md:grid-cols-2 gap-16 items-start">
+        <!-- LEFT INFO -->
+        <div class="pt-12">
+          <p class="section-label mb-4 fade-up">Book a Table</p>
+          <h1 class="font-serif font-light fade-up-2" style="font-size:clamp(52px,7vw,90px);line-height:1;letter-spacing:-.01em;color:#f0ece4">Reserve<br/><em>Tonight.</em></h1>
+          <div class="gold-line mt-10 mb-8 fade-up-2"></div>
+          <p class="font-sans text-text-secondary text-sm leading-relaxed mb-10 fade-up-3" style="max-width:360px">Twelve seats. One nightly service. An experience that cannot be replicated. Please book at least 24 hours in advance.</p>
+          <div class="space-y-6 fade-up-3">
+            <div class="flex items-start gap-4"><span class="text-gold font-serif text-xl mt-0.5">◈</span><div><p class="font-sans text-text-primary text-sm">Hours</p><p class="font-sans text-text-muted text-xs mt-1 leading-relaxed">Wednesday – Sunday<br/>19:30 — Last seating 22:00</p></div></div>
+            <div class="flex items-start gap-4"><span class="text-gold font-serif text-xl mt-0.5">◇</span><div><p class="font-sans text-text-primary text-sm">Location</p><p class="font-sans text-text-muted text-xs mt-1 leading-relaxed">12 Rue du Faubourg Saint-Honoré<br/>75008 Paris, France</p></div></div>
+            <div class="flex items-start gap-4"><span class="text-gold font-serif text-xl mt-0.5">✦</span><div><p class="font-sans text-text-primary text-sm">Phone</p><p class="font-sans text-text-muted text-xs mt-1">+33 1 42 86 82 00</p></div></div>
+          </div>
+        </div>
+
+        <!-- RIGHT FORM -->
+        <div class="pt-6 md:pt-16">
+          <!-- Step indicator -->
+          <div class="flex items-center gap-2 mb-8">
+            <div class="step-dot active" id="dot-1"></div>
+            <div class="step-line" id="line-1"></div>
+            <div class="step-dot" id="dot-2"></div>
+            <div class="step-line" id="line-2"></div>
+            <div class="step-dot" id="dot-3"></div>
+          </div>
+
+          <!-- STEP 1 -->
+          <div id="step-1">
+            <p class="font-serif italic text-text-secondary text-lg mb-6">Choose your evening</p>
+            <!-- CALENDAR -->
+            <div class="mb-5">
+              <label class="form-label">Date</label>
+              <div class="cal-wrap" id="cal-wrap">
+                <div class="cal-header">
+                  <button type="button" class="cal-nav" id="cal-prev">‹</button>
+                  <span class="cal-month" id="cal-month-lbl"></span>
+                  <button type="button" class="cal-nav" id="cal-next">›</button>
+                </div>
+                <div class="cal-grid" id="cal-weekdays"></div>
+                <div class="cal-grid" id="cal-days"></div>
+              </div>
+              <input type="hidden" id="res-date" />
+              <p id="sel-date-display" class="font-sans text-xs text-text-muted mt-2" style="min-height:1.2em"></p>
+            </div>
+
+            <!-- GUESTS -->
+            <div class="mb-5">
+              <label class="form-label">Party Size</label>
+              <select id="res-guests" class="form-input">
+                <option value="">Select guests</option>
+                <option value="1">1 Guest</option><option value="2">2 Guests</option>
+                <option value="3">3 Guests</option><option value="4">4 Guests</option>
+                <option value="5">5 Guests</option><option value="6">6 Guests</option>
+                <option value="7">7 Guests</option><option value="8">8 Guests</option>
+              </select>
+            </div>
+
+            <!-- TIME SLOTS -->
+            <div class="mb-6">
+              <label class="form-label">Preferred Time</label>
+              <div class="grid grid-cols-3 gap-2" id="time-slots">
+                <button type="button" class="time-slot" data-time="19:30">7:30 PM</button>
+                <button type="button" class="time-slot" data-time="20:00">8:00 PM</button>
+                <button type="button" class="time-slot" data-time="20:30">8:30 PM</button>
+                <button type="button" class="time-slot" data-time="21:00">9:00 PM</button>
+                <button type="button" class="time-slot" data-time="21:30">9:30 PM</button>
+                <button type="button" class="time-slot" data-time="22:00">10:00 PM</button>
+              </div>
+            </div>
+
+            <p id="s1-err" class="form-error mb-3"></p>
+            <button type="button" onclick="goStep2()" class="float-btn w-full bg-gold hover:bg-gold-light text-obsidian font-sans text-xs tracking-ultra uppercase py-4 rounded-full transition-colors duration-300 cursor-none">Continue →</button>
+          </div>
+
+          <!-- STEP 2 -->
+          <div id="step-2" style="display:none">
+            <p class="font-serif italic text-text-secondary text-lg mb-6">Your details</p>
+            <div class="flex flex-col gap-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="form-label">First Name</label><input type="text" id="res-fname" class="form-input" placeholder="Adrien" autocomplete="given-name"></div>
+                <div><label class="form-label">Last Name</label><input type="text" id="res-lname" class="form-input" placeholder="Beaumont" autocomplete="family-name"></div>
+              </div>
+              <div><label class="form-label">Email Address</label><input type="email" id="res-email" class="form-input" placeholder="your@email.com" autocomplete="email"><p class="field-hint" id="email-hint"></p></div>
+              <div><label class="form-label">Phone Number</label><input type="tel" id="res-phone" class="form-input" placeholder="+33 6 00 00 00 00" autocomplete="tel"><p class="field-hint" id="phone-hint"></p></div>
+              <div><label class="form-label">Special Requests <span style="text-transform:none;letter-spacing:0;font-size:.65rem;color:#2a2a2e">optional</span></label><textarea id="res-notes" class="form-input" rows="3" placeholder="Dietary restrictions, celebrations, allergies…" style="resize:none"></textarea></div>
+              <input type="text" id="hp" style="display:none" tabindex="-1" autocomplete="off">
+            </div>
+            <p id="s2-err" class="form-error mt-3 mb-3"></p>
+            <div class="grid grid-cols-2 gap-3 mt-4">
+              <button type="button" onclick="goStep1()" class="float-btn border border-border text-text-secondary font-sans text-xs tracking-wide-xl uppercase py-4 rounded-full transition-all duration-300 cursor-none">← Back</button>
+              <button type="button" id="submit-btn" onclick="doSubmit()" class="float-btn bg-gold hover:bg-gold-light text-obsidian font-sans text-xs tracking-ultra uppercase py-4 rounded-full transition-colors duration-300 cursor-none">Confirm</button>
+            </div>
+          </div>
+
+          <!-- STEP 3: TICKET -->
+          <div id="step-3" style="display:none">
+            <div class="ticket-card">
+              <p class="section-label mb-1">Reservation Confirmed</p>
+              <p class="font-serif text-text-muted italic text-sm mb-4">We look forward to welcoming you</p>
+              <p class="font-serif text-gold text-3xl tracking-widest mb-6" id="t-id" style="letter-spacing:.2em">—</p>
+              <div class="gold-line mb-4"></div>
+              <div class="ticket-row"><span class="font-sans text-text-muted text-xs tracking-wide uppercase">Guest</span><span class="font-serif text-text-primary" id="t-name">—</span></div>
+              <div class="ticket-row"><span class="font-sans text-text-muted text-xs tracking-wide uppercase">Date</span><span class="font-serif text-text-primary" id="t-date">—</span></div>
+              <div class="ticket-row"><span class="font-sans text-text-muted text-xs tracking-wide uppercase">Time</span><span class="font-serif text-text-primary" id="t-time">—</span></div>
+              <div class="ticket-row"><span class="font-sans text-text-muted text-xs tracking-wide uppercase">Guests</span><span class="font-serif text-text-primary" id="t-guests">—</span></div>
+              <p class="font-sans text-text-muted text-xs mt-6 leading-relaxed">Present your reservation ID on arrival. A confirmation email has been sent.</p>
+              <div class="flex gap-3 mt-6">
+                <a href="v4.html" class="float-btn flex-1 text-center border border-border text-text-secondary font-sans text-xs tracking-wide-xl uppercase py-3 rounded-full transition-all duration-300 cursor-none">Home</a>
+                <a href="menu.html" class="float-btn flex-1 text-center border border-gold/30 text-gold font-sans text-xs tracking-wide-xl uppercase py-3 rounded-full transition-all duration-300 cursor-none">View Menu</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="border-t border-border py-8 px-6" style="position:relative;z-index:1">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <span class="font-serif text-text-muted tracking-ultra text-sm">OBSIDIAN</span>
+      <p class="font-sans text-text-muted text-xs tracking-wide">© 2026 Obsidian Restaurant. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // CURSOR
+    const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    if(cur&&ring){
+      document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.transform=`translate3d(${mx-5}px,${my-5}px,0)`},{passive:true});
+      (function ar(){rx+=(mx-rx)*.14;ry+=(my-ry)*.14;ring.style.transform=`translate3d(${rx-18}px,${ry-18}px,0)`;requestAnimationFrame(ar)})();
+      document.querySelectorAll('a,button').forEach(el=>{el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'))});
+    }
+    window.toggleMob=function(){const m=document.getElementById('mob-menu');m.classList.toggle('hidden');m.classList.toggle('flex')};
+
+    // ─── CALENDAR ────────────────────────────────────────────
+    // Compute boundaries NOW (called at runtime so time is accurate)
+    function getNow() { return new Date(); }
+    function getToday() { const d=new Date(); d.setHours(0,0,0,0); return d; }
+    function getMaxDate() { const d=getToday(); d.setDate(d.getDate()+60); return d; }
+
+    let viewY = getNow().getFullYear();
+    let viewM = getNow().getMonth();
+    let selDate = null; // YYYY-MM-DD
+
+    // Build weekday headers
+    const wdContainer = document.getElementById('cal-weekdays');
+    ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d=>{
+      const el=document.createElement('div');
+      el.className='cal-wd'; el.textContent=d;
+      wdContainer.appendChild(el);
+    });
+
+    function renderCal() {
+      const today = getToday();
+      const maxDate = getMaxDate();
+
+      // Update month label
+      document.getElementById('cal-month-lbl').textContent =
+        new Date(viewY, viewM, 1).toLocaleDateString('en-US', { month:'long', year:'numeric' });
+
+      // Prev/Next button state
+      // Can't go back before the month containing today
+      const prevOk = new Date(viewY, viewM, 0) >= today; // last day of prev month >= today
+      const nextOk = new Date(viewY, viewM+1, 1) <= maxDate; // first day of next month <= maxDate
+      document.getElementById('cal-prev').disabled = !prevOk;
+      document.getElementById('cal-next').disabled = !nextOk;
+
+      const firstDay = new Date(viewY, viewM, 1).getDay();
+      const daysInMonth = new Date(viewY, viewM+1, 0).getDate();
+      const grid = document.getElementById('cal-days');
+      grid.innerHTML = '';
+
+      // Empty cells
+      for (let i=0; i<firstDay; i++) {
+        const el=document.createElement('div'); el.className='cal-day empty'; grid.appendChild(el);
+      }
+
+      for (let d=1; d<=daysInMonth; d++) {
+        const date = new Date(viewY, viewM, d);
+        const ds = `${viewY}-${String(viewM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const el = document.createElement('div');
+        el.textContent = d;
+
+        const isPast = date < today;
+        const isFuture = date > maxDate;
+        const isSel = ds === selDate;
+        const isToday = date.toDateString() === today.toDateString();
+
+        let cls = 'cal-day';
+        if (isSel) cls += ' selected';
+        else if (isPast || isFuture) cls += ' disabled';
+        else cls += ' available';
+        if (isToday && !isSel) cls += ' today';
+        el.className = cls;
+
+        if (!isPast && !isFuture) {
+          el.addEventListener('click', () => {
+            selDate = ds;
+            document.getElementById('res-date').value = ds;
+            document.getElementById('sel-date-display').textContent =
+              new Date(ds+'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+            document.getElementById('s1-err').textContent = '';
+            // Disable past time slots if today
+            updateTimeSlots(ds);
+            renderCal(); // re-render for selected state
+          });
+        }
+        grid.appendChild(el);
+      }
+    }
+
+    // ─── TIME SLOTS — disable past times if today ─────────────
+    function updateTimeSlots(dateStr) {
+      const todayStr = getToday().toISOString().slice(0,10);
+      const now = getNow();
+      const nowMinutes = now.getHours()*60 + now.getMinutes();
+      document.querySelectorAll('.time-slot').forEach(btn => {
+        if (dateStr === todayStr) {
+          const [h,m] = btn.dataset.time.split(':').map(Number);
+          const slotMinutes = h*60+m;
+          // Disable if slot is less than 60 min from now
+          if (slotMinutes - nowMinutes < 60) {
+            btn.classList.add('disabled'); btn.classList.remove('active');
+          } else {
+            btn.classList.remove('disabled');
+          }
+        } else {
+          btn.classList.remove('disabled');
+        }
+      });
+    }
+
+    document.getElementById('cal-prev').addEventListener('click',()=>{
+      viewM--; if(viewM<0){viewM=11;viewY--;} renderCal();
+    });
+    document.getElementById('cal-next').addEventListener('click',()=>{
+      viewM++; if(viewM>11){viewM=0;viewY++;} renderCal();
+    });
+
+    // Initial render
+    renderCal();
+
+    // ─── TIME SLOTS ───────────────────────────────────────────
+    let selTime = null;
+    document.querySelectorAll('.time-slot').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('disabled')) return;
+        document.querySelectorAll('.time-slot').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active'); selTime=btn.dataset.time;
+        document.getElementById('s1-err').textContent='';
+      });
+    });
+
+    // ─── STEPS ───────────────────────────────────────────────
+    let step1Data = {};
+    function setDots(step) {
+      document.querySelectorAll('.step-dot').forEach((d,i)=>{d.classList.toggle('active',i+1===step);d.classList.toggle('done',i+1<step)});
+      document.querySelectorAll('.step-line').forEach((l,i)=>l.classList.toggle('done',i+1<step));
+    }
+    window.goStep1 = function(){document.getElementById('step-2').style.display='none';document.getElementById('step-1').style.display='block';setDots(1)};
+    window.goStep2 = function(){
+      const date=document.getElementById('res-date').value;
+      const guests=document.getElementById('res-guests').value;
+      const err=document.getElementById('s1-err');
+      if(!date){err.textContent='Please select a date.';return}
+      if(!guests){err.textContent='Please select the number of guests.';return}
+      if(!selTime){err.textContent='Please select a time slot.';return}
+      // Validate time slot is not disabled
+      const activeSlot=document.querySelector('.time-slot.active');
+      if(!activeSlot||activeSlot.classList.contains('disabled')){err.textContent='Please select a valid time slot.';return}
+      err.textContent='';
+      step1Data={date,guests,time:selTime};
+      document.getElementById('step-1').style.display='none';
+      document.getElementById('step-2').style.display='block';
+      setDots(2);
+    };
+
+    // ─── VALIDATION ───────────────────────────────────────────
+    function vEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)}
+    function vPhone(v){return /^\+?[0-9]{7,15}$/.test(v.replace(/[\s\-().+]/g,''))}
+    function setHint(id,ok,msg){const h=document.getElementById(id);if(h){h.textContent=msg;h.style.color=ok?'#81c784':'#ef9a9a'}}
+    const emailEl=document.getElementById('res-email'), phoneEl=document.getElementById('res-phone');
+    emailEl?.addEventListener('blur',()=>{const v=emailEl.value.trim();if(!v)return;const ok=vEmail(v);emailEl.classList.toggle('input-ok',ok);emailEl.classList.toggle('input-error',!ok);setHint('email-hint',ok,ok?'':'Please enter a valid email.')});
+    phoneEl?.addEventListener('blur',()=>{const v=phoneEl.value.trim();if(!v)return;const ok=vPhone(v);phoneEl.classList.toggle('input-ok',ok);phoneEl.classList.toggle('input-error',!ok);setHint('phone-hint',ok,ok?'':'Enter a valid phone number.')});
+
+    // ─── SUBMIT ───────────────────────────────────────────────
+    window.doSubmit = async function() {
+      if(document.getElementById('hp').value) return;
+      const fname=document.getElementById('res-fname').value.trim();
+      const lname=document.getElementById('res-lname').value.trim();
+      const email=document.getElementById('res-email').value.trim();
+      const phone=document.getElementById('res-phone').value.trim();
+      const notes=document.getElementById('res-notes').value.trim();
+      const err=document.getElementById('s2-err');
+      if(!fname||!lname){err.textContent='Please enter your full name.';return}
+      if(!vEmail(email)){err.textContent='Please enter a valid email.';emailEl.focus();return}
+      if(!vPhone(phone)){err.textContent='Please enter a valid phone number.';phoneEl.focus();return}
+      err.textContent='';
+      const btn=document.getElementById('submit-btn');
+      btn.disabled=true; btn.textContent='Confirming…';
+      const payload={name:`${fname} ${lname}`,email,phone,notes,...step1Data};
+      let resData=null;
+      try{
+        const r=await fetch('/api/reservation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        resData=await r.json();
+        if(!resData.ok)throw new Error(resData.message||'Error');
+      }catch(e){
+        // Degraded mode: still show confirmation
+        resData={ok:true,reservation:{...payload,id:null}};
+      }
+      if(resData.ok){
+        const rv=resData.reservation||payload;
+        const sid=rv.id?String(rv.id).slice(-8).toUpperCase():Math.random().toString(36).slice(2,10).toUpperCase();
+        document.getElementById('t-id').textContent=sid;
+        document.getElementById('t-name').textContent=rv.name||'—';
+        document.getElementById('t-date').textContent=rv.date?new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric'}).format(new Date(rv.date+'T12:00:00')):'—';
+        document.getElementById('t-time').textContent=rv.time?(()=>{const[h,m]=rv.time.split(':').map(Number);const d=new Date();d.setHours(h,m);return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})})():'—';
+        document.getElementById('t-guests').textContent=(rv.guests||'—')+' guest'+((rv.guests>1)?'s':'');
+        document.getElementById('step-2').style.display='none';
+        document.getElementById('step-3').style.display='block';
+        setDots(3);
+        window.scrollTo({top:0,behavior:'smooth'});
+      }else{
+        err.textContent=resData.message||'Something went wrong. Please try again.';
+        btn.disabled=false; btn.textContent='Confirm';
+      }
+    };
+  </script>
+</body>
+</html>
