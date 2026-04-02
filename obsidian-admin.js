@@ -17,7 +17,7 @@ import {
 // ─── WHITELISTED GMAIL ACCOUNTS ───────────────────────────────
 // Change these to the 4 real admin email addresses
 const ALLOWED_EMAILS = [
-  'admin1@gmail.com',
+  'contact@lucentcreative.space',
   'admin2@gmail.com',
   'admin3@gmail.com',
   'admin4@gmail.com',
